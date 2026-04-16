@@ -2,46 +2,64 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>I-Oun Alarm Control</title>
     <style>
         body { font-family: sans-serif; text-align: center; padding-top: 50px; background: #1a1a1a; color: white; }
         input { padding: 10px; font-size: 18px; border-radius: 5px; border: none; }
-        button { padding: 15px 30px; font-size: 20px; cursor: pointer; background: #e74c3c; color: white; border: none; border-radius: 10px; display: none; margin-top: 20px; }
-        button:hover { background: #c0392b; }
-        #status { margin-top: 20px; color: #2ecc71; }
+        #wakeBtn { padding: 15px 30px; font-size: 20px; cursor: pointer; background: #e74c3c; color: white; border: none; border-radius: 10px; display: none; margin-top: 20px; }
+        #wakeBtn:hover { background: #c0392b; }
+        #status { margin-top: 20px; color: #2ecc71; font-weight: bold; }
+        
+        /* ปุ่มแมวลับ สำหรับหยุดเพลง */
+        #cat { position: fixed; bottom: 10px; left: 10px; cursor: pointer; opacity: 0.2; font-size: 24px; background: none; border: none; }
+        #cat:hover { opacity: 1; }
     </style>
 </head>
 <body>
-    <h1>ระบบปลุกไออุ่น</h1>
+    <h1>ระบบปลุกไออุ่น (Cloud)</h1>
+    
     <div id="login-section">
         <p>กรุณาใส่รหัสผ่าน:</p>
         <input type="password" id="password" oninput="checkPass()" placeholder="******">
     </div>
 
-    <button id="wakeBtn" onclick="sendWakeCommand()">WAKE I-OUN UP!</button>
+    <button id="wakeBtn" onclick="sendCommand('wake')">WAKE I-OUN UP!</button>
     <p id="status"></p>
 
+    <button id="cat" onclick="sendCommand('stop')">🐈</button>
+
     <script>
-        // เปลี่ยนเป็น IP ของ Pico 2W ที่แสดงใน Thonny
-        const PICO_IP = "192.168.1.118"; 
+        // ใช้ลิงก์ Firebase ของคุณโดยตรง (เติม /status.json แล้ว)
+        const FIREBASE_URL = "https://wake-me-up-kreme-default-rtdb.asia-southeast1.firebasedatabase.app/status.json";
 
         function checkPass() {
             const pass = document.getElementById('password').value;
             if (pass === "130825") {
                 document.getElementById('wakeBtn').style.display = "inline-block";
                 document.getElementById('login-section').style.display = "none";
+                document.getElementById('status').innerText = "พร้อมใช้งาน! สั่งการจากที่ไหนก็ได้";
             }
         }
 
-        function sendWakeCommand() {
-            document.getElementById('status').innerText = "กำลังส่งคำสั่ง...";
-            fetch(`http://${PICO_IP}/wake`)
-                .then(response => {
-                    document.getElementById('status').innerText = "ปลุกไออุ่นสำเร็จ!";
-                })
-                .catch(err => {
-                    document.getElementById('status').innerText = "เชื่อมต่อ Pico ไม่ได้ (เช็ค IP หรือ WiFi)";
-                });
+        function sendCommand(actionCommand) {
+            document.getElementById('status').innerText = "กำลังส่งคำสั่งไปที่ Cloud...";
+            
+            // ส่งคำสั่ง wake หรือ stop ไปที่ Firebase
+            fetch(FIREBASE_URL, {
+                method: 'PUT',
+                body: JSON.stringify({ action: actionCommand })
+            })
+            .then(response => {
+                if (actionCommand === 'wake') {
+                    document.getElementById('status').innerText = "ปลุกไออุ่นสำเร็จ! (ระบบ Cloud)";
+                } else {
+                    document.getElementById('status').innerText = "สั่งหยุดเพลงสำเร็จ!";
+                }
+            })
+            .catch(err => {
+                document.getElementById('status').innerText = "เชื่อมต่อ Cloud ไม่ได้ (เช็คเน็ตมือถือ)";
+            });
         }
     </script>
 </body>
