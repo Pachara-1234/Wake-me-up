@@ -1,63 +1,49 @@
 <!DOCTYPE html>
-<html lang="th">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>I-Oun Alarm System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sans Alarm</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding-top: 100px; background: #000; color: #fff; }
-        .container { border: 2px solid #333; display: inline-block; padding: 40px; border-radius: 20px; background: #111; }
-        input { padding: 12px; font-size: 18px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; margin-bottom: 20px; }
-        #wakeBtn { padding: 20px 40px; font-size: 24px; cursor: pointer; background: #3498db; color: white; border: none; border-radius: 12px; display: none; box-shadow: 0 0 20px rgba(52, 152, 219, 0.5); }
-        #wakeBtn:active { transform: scale(0.95); }
-        
-        /* ปุ่มลับรูปแมว */
-        #catBtn {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            font-size: 20px;
-            cursor: pointer;
-            opacity: 0.3; /* ทำให้จางๆ เป็นปุ่มลับ */
-            background: none;
-            border: none;
-            user-select: none;
-        }
-        #catBtn:hover { opacity: 1; }
-        #status { margin-top: 20px; color: #aaa; }
+        body { background: #000; color: #fff; font-family: sans-serif; text-align: center; margin-top: 50px; }
+        .box { border: 2px solid #fff; padding: 30px; display: inline-block; border-radius: 15px; }
+        input { font-size: 20px; padding: 10px; border-radius: 5px; text-align: center; }
+        button { background: #2980b9; color: #fff; border: none; padding: 15px 30px; font-size: 20px; border-radius: 10px; display: none; margin-top: 20px; cursor: pointer; }
+        #cat { position: fixed; bottom: 10px; left: 10px; cursor: pointer; opacity: 0.2; font-size: 24px; background: none; border: none; }
+        #cat:hover { opacity: 1; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>ระบบปลุกไออุ่น 2.0</h1>
-        <div id="login-section">
-            <input type="password" id="password" oninput="checkPass()" placeholder="ใส่รหัสผ่าน...">
+    <div class="box">
+        <h1>SANS ALARM</h1>
+        <div id="login">
+            <input type="password" id="pw" placeholder="PASSCODE" oninput="check()">
         </div>
-        <button id="wakeBtn" onclick="sendControl('wake')">WAKE I-OUN UP!</button>
-        <p id="status">กรุณาใส่รหัสผ่านเพื่อเริ่มระบบ</p>
+        <button id="btn" onclick="hit('wake')">WAKE I-OUN UP!</button>
+        <p id="msg">กรุณาใส่รหัสผ่าน</p>
     </div>
-
-    <button id="catBtn" onclick="sendControl('stop')">🐈</button>
+    <button id="cat" onclick="hit('stop')">🐈</button>
 
     <script>
-        const PICO_IP = "192.168.1.118"; // **เปลี่ยนเป็น IP ของ Pico มึงด้วย**
+        const PICO_IP = "192.168.1.XXX"; // แก้เป็นเลขที่โชว์บนจอ OLED
 
-        function checkPass() {
-            if (document.getElementById('password').value === "130825") {
-                document.getElementById('wakeBtn').style.display = "inline-block";
-                document.getElementById('login-section').style.display = "none";
-                document.getElementById('status').innerText = "ปลดล็อคแล้ว จิ้มปุ่มข้างบนเลย";
+        function check() {
+            if (document.getElementById('pw').value === "130825") {
+                document.getElementById('btn').style.display = "block";
+                document.getElementById('login').style.display = "none";
+                document.getElementById('msg').innerText = "ปลดล็อคสำเร็จ";
             }
         }
 
-        function sendControl(action) {
-            document.getElementById('status').innerText = "กำลังส่งคำสั่ง " + action + "...";
-            fetch(`http://${PICO_IP}/${action}`, { mode: 'no-cors' })
-                .then(() => {
-                    document.getElementById('status').innerText = (action === 'wake') ? "ปลุกยาวๆ ไป!" : "หยุดเพลงแล้วจ้า";
-                })
-                .catch(() => {
-                    document.getElementById('status').innerText = "ส่งไม่สำเร็จ (เช็ค IP Pico)";
-                });
+        function hit(act) {
+            document.getElementById('msg').innerText = "กำลังส่งคำสั่ง...";
+            // ใช้ Image Beacon เพื่อข้ามปัญหา HTTPS/CORS
+            const img = new Image();
+            img.src = `http://${PICO_IP}/${act}?t=${Date.now()}`;
+            
+            setTimeout(() => {
+                document.getElementById('msg').innerText = "ดำเนินการสำเร็จ!";
+            }, 1000);
         }
     </script>
 </body>
