@@ -2,45 +2,61 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>I-Oun Alarm Control</title>
+    <title>I-Oun Alarm System</title>
     <style>
-        body { font-family: sans-serif; text-align: center; padding-top: 50px; background: #1a1a1a; color: white; }
-        input { padding: 10px; font-size: 18px; border-radius: 5px; border: none; }
-        button { padding: 15px 30px; font-size: 20px; cursor: pointer; background: #e74c3c; color: white; border: none; border-radius: 10px; display: none; margin-top: 20px; }
-        button:hover { background: #c0392b; }
-        #status { margin-top: 20px; color: #2ecc71; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding-top: 100px; background: #000; color: #fff; }
+        .container { border: 2px solid #333; display: inline-block; padding: 40px; border-radius: 20px; background: #111; }
+        input { padding: 12px; font-size: 18px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; margin-bottom: 20px; }
+        #wakeBtn { padding: 20px 40px; font-size: 24px; cursor: pointer; background: #3498db; color: white; border: none; border-radius: 12px; display: none; box-shadow: 0 0 20px rgba(52, 152, 219, 0.5); }
+        #wakeBtn:active { transform: scale(0.95); }
+        
+        /* ปุ่มลับรูปแมว */
+        #catBtn {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            opacity: 0.3; /* ทำให้จางๆ เป็นปุ่มลับ */
+            background: none;
+            border: none;
+            user-select: none;
+        }
+        #catBtn:hover { opacity: 1; }
+        #status { margin-top: 20px; color: #aaa; }
     </style>
 </head>
 <body>
-    <h1>ระบบปลุกไออุ่น</h1>
-    <div id="login-section">
-        <p>กรุณาใส่รหัสผ่าน:</p>
-        <input type="password" id="password" oninput="checkPass()" placeholder="******">
+    <div class="container">
+        <h1>ระบบปลุกไออุ่น 2.0</h1>
+        <div id="login-section">
+            <input type="password" id="password" oninput="checkPass()" placeholder="ใส่รหัสผ่าน...">
+        </div>
+        <button id="wakeBtn" onclick="sendControl('wake')">WAKE I-OUN UP!</button>
+        <p id="status">กรุณาใส่รหัสผ่านเพื่อเริ่มระบบ</p>
     </div>
 
-    <button id="wakeBtn" onclick="sendWakeCommand()">WAKE I-OUN UP!</button>
-    <p id="status"></p>
+    <button id="catBtn" onclick="sendControl('stop')">🐈</button>
 
     <script>
-        // เปลี่ยนเป็น IP ของ Pico 2W ที่แสดงใน Thonny
-        const PICO_IP = "192.168.1.118"; 
+        const PICO_IP = "192.168.1.XXX"; // **เปลี่ยนเป็น IP ของ Pico มึงด้วย**
 
         function checkPass() {
-            const pass = document.getElementById('password').value;
-            if (pass === "130825") {
+            if (document.getElementById('password').value === "130825") {
                 document.getElementById('wakeBtn').style.display = "inline-block";
                 document.getElementById('login-section').style.display = "none";
+                document.getElementById('status').innerText = "ปลดล็อคแล้ว จิ้มปุ่มข้างบนเลย";
             }
         }
 
-        function sendWakeCommand() {
-            document.getElementById('status').innerText = "กำลังส่งคำสั่ง...";
-            fetch(`http://${PICO_IP}/wake`)
-                .then(response => {
-                    document.getElementById('status').innerText = "ปลุกไออุ่นสำเร็จ!";
+        function sendControl(action) {
+            document.getElementById('status').innerText = "กำลังส่งคำสั่ง " + action + "...";
+            fetch(`http://${PICO_IP}/${action}`, { mode: 'no-cors' })
+                .then(() => {
+                    document.getElementById('status').innerText = (action === 'wake') ? "ปลุกยาวๆ ไป!" : "หยุดเพลงแล้วจ้า";
                 })
-                .catch(err => {
-                    document.getElementById('status').innerText = "เชื่อมต่อ Pico ไม่ได้ (เช็ค IP หรือ WiFi)";
+                .catch(() => {
+                    document.getElementById('status').innerText = "ส่งไม่สำเร็จ (เช็ค IP Pico)";
                 });
         }
     </script>
