@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Wake Me Up 💖</title>
+    <title>WAKE UP 💖</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         /* ================= Samsung Tab S7 FE Dark Theme & Animations ================= */
         :root {
-            --bg-color: #000000;
-            --card-color: #1c1c1e;
+            --bg-color: #0a0a0c;
+            --card-color: #1a1a1c;
             --text-main: #ffffff;
             --text-muted: #8e8e93;
             --accent-blue: #3e90ff;
             --accent-red: #ff3b30;
-            --accent-green: #34c759;
-            --font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --font-family: 'Noto Sans Thai', sans-serif;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -80,11 +80,11 @@
             transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s ease;
         }
         /* Default positions for sliding animation */
-        #nudge-tab { transform: translateX(0); opacity: 1; z-index: 2; }
-        #alarm-tab { transform: translateX(100%); opacity: 0; z-index: 1; pointer-events: none; }
+        #wake-up-tab { transform: translateX(0); opacity: 1; z-index: 2; }
+        #timeset-tab { transform: translateX(100%); opacity: 0; z-index: 1; pointer-events: none; }
         
-        body.show-alarm #nudge-tab { transform: translateX(-100%); opacity: 0; pointer-events: none; }
-        body.show-alarm #alarm-tab { transform: translateX(0); opacity: 1; pointer-events: auto; }
+        body.show-alarm #wake-up-tab { transform: translateX(-100%); opacity: 0; pointer-events: none; }
+        body.show-alarm #timeset-tab { transform: translateX(0); opacity: 1; pointer-events: auto; }
 
         /* --- UI Elements --- */
         .circle-btn {
@@ -113,13 +113,26 @@
             display: flex; justify-content: space-between; align-items: center;
         }
         
-        .stop-btn {
-            background-color: var(--card-color); border: 2px solid var(--accent-red);
-            color: var(--accent-red); font-size: 18px; font-weight: 600;
-            padding: 15px 40px; border-radius: 30px; cursor: pointer;
-            margin-top: 50px; transition: all 0.2s; width: 100%; max-width: 300px;
+        /* ปุ่มสกิดดีไซน์ใหม่ */
+        .nudge-card {
+            background-color: var(--card-color); width: 100%; max-width: 400px;
+            border-radius: 24px; padding: 25px; margin-top: 30px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 10px;
+            cursor: pointer; transition: transform 0.1s, box-shadow 0.1s;
         }
-        .stop-btn:active { background-color: var(--accent-red); color: white; transform: scale(0.95); }
+        .nudge-card:active {
+            transform: scale(0.95);
+            box-shadow: inset 10px 10px 20px #0a0a0a, inset -10px -10px 20px #2e2e32;
+        }
+        .nudge-card-image { width: 100%; height: auto; border-radius: 12px; }
+
+        /* สวิตช์สลับเปิด/ปิด */
+        .toggle-switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-bg { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--text-muted); transition: .4s; border-radius: 34px; }
+        .toggle-dot { position: absolute; content: ''; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .toggle-bg { background-color: var(--accent-blue); }
+        input:checked + .toggle-bg .toggle-dot { transform: translateX(26px); }
 
         .status-text { margin-top: 20px; font-size: 14px; color: var(--text-muted); min-height: 20px; }
 
@@ -138,37 +151,35 @@
 
     <div id="main-app">
         <div class="tab-bar">
-            <button class="tab-btn active" id="btn-nudge" onclick="switchTab('nudge')">สะกิดที่รัก 💖</button>
-            <button class="tab-btn" id="btn-alarm" onclick="switchTab('alarm')">ตั้งปลุก ⏰</button>
+            <button class="tab-btn active" id="btn-nudge" onclick="switchTab('wake-up')">WAKE UP 💖</button>
+            <button class="tab-btn" id="btn-timeset" onclick="switchTab('timeset')">Timeset ⏰</button>
         </div>
 
         <div class="content-area">
-            <div id="nudge-tab" class="tab-content">
-                <button class="circle-btn blue" onclick="sendToFirebase('nudge')">
-                    <span style="font-size: 40px;">👋</span>
-                    สะกิดเลย!
+            <div id="wake-up-tab" class="tab-content">
+                <button class="nudge-card" onclick="sendToFirebase('nudge')">
+                    <img src="https://gemini.google.com/u/0/app/image_2.png" alt="สกิดแมว" class="nudge-card-image">
+                    <div>Awake ioun now button</div>
                 </button>
                 <div id="nudge-status" class="status-text">รอการสั่งงาน...</div>
-
-                <button class="stop-btn" onclick="sendToFirebase('stop')">⏹ หยุดเพลง / ปิดไฟ</button>
             </div>
 
-            <div id="alarm-tab" class="tab-content">
-                <input type="time" id="alarm-time" class="time-picker" value="07:00">
+            <div id="timeset-tab" class="tab-content">
+                <input type="time" id="timeset-time" class="time-picker" value="07:00">
                 
                 <div class="action-card">
                     <div>
                         <div style="font-size: 20px; font-weight: 500;">เปิดใช้งานนาฬิกาปลุก</div>
                         <div style="font-size: 14px; color: var(--text-muted); margin-top: 5px;">เล่นเพลงพร้อมกระพริบไฟ</div>
                     </div>
-                    <label style="position: relative; display: inline-block; width: 60px; height: 34px;">
-                        <input type="checkbox" id="alarm-toggle" style="opacity: 0; width: 0; height: 0;" onchange="toggleAlarm(this)">
-                        <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--text-muted); transition: .4s; border-radius: 34px;" id="toggle-bg">
-                            <span style="position: absolute; content: ''; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%;" id="toggle-dot"></span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="timeset-toggle" onchange="toggleAlarm(this)">
+                        <span class="toggle-bg">
+                            <span class="toggle-dot"></span>
                         </span>
                     </label>
                 </div>
-                <div id="alarm-status" class="status-text">รอการตั้งเวลา...</div>
+                <div id="timeset-status" class="status-text">รอการตั้งเวลา...</div>
             </div>
         </div>
     </div>
@@ -205,14 +216,14 @@
 
         // --- Tab Switching Logic ---
         function switchTab(tab) {
-            if (tab === 'alarm') {
+            if (tab === 'timeset') {
                 document.body.classList.add('show-alarm');
-                document.getElementById('btn-alarm').classList.add('active');
+                document.getElementById('btn-timeset').classList.add('active');
                 document.getElementById('btn-nudge').classList.remove('active');
             } else {
                 document.body.classList.remove('show-alarm');
                 document.getElementById('btn-nudge').classList.add('active');
-                document.getElementById('btn-alarm').classList.remove('active');
+                document.getElementById('btn-timeset').classList.remove('active');
             }
         }
 
@@ -220,7 +231,7 @@
         async function sendToFirebase(actionType, extraData = {}) {
             // Update status text based on active tab
             const statusEl = document.body.classList.contains('show-alarm') 
-                ? document.getElementById('alarm-status') 
+                ? document.getElementById('timeset-status') 
                 : document.getElementById('nudge-status');
             
             statusEl.textContent = "กำลังส่งคำสั่ง...";
@@ -228,7 +239,7 @@
             // Create payload
             // ใช้ timestamp เพื่อให้ฝั่งบอร์ด (ESP8266/ESP32) รู้ว่าเป็นคำสั่งใหม่เสมอ
             const payload = {
-                command: actionType, // 'nudge', 'stop', 'set_alarm'
+                command: actionType, // 'nudge', 'set_alarm'
                 timestamp: Date.now(),
                 ...extraData
             };
@@ -243,7 +254,6 @@
 
                 if (response.ok) {
                     if(actionType === 'nudge') statusEl.textContent = "สะกิดเรียบร้อยแล้ว! 💖";
-                    if(actionType === 'stop') statusEl.textContent = "สั่งหยุดเพลงและไฟแล้ว ⏹";
                     if(actionType === 'set_alarm') statusEl.textContent = "อัปเดตเวลาปลุกแล้ว ⏰";
                     
                     setTimeout(() => statusEl.textContent = "รอการสั่งงาน...", 3000);
@@ -256,26 +266,20 @@
             }
         }
 
-        // --- Alarm Toggle Styling & Logic ---
+        // --- Alarm Togglestyling & Logic ---
         function toggleAlarm(checkbox) {
-            const bg = document.getElementById('toggle-bg');
-            const dot = document.getElementById('toggle-dot');
-            const timeVal = document.getElementById('alarm-time').value;
+            const timeVal = document.getElementById('timeset-time').value;
 
             if (checkbox.checked) {
-                bg.style.backgroundColor = "var(--accent-blue)";
-                dot.style.transform = "translateX(26px)";
                 sendToFirebase('set_alarm', { alarm_time: timeVal, is_active: true });
             } else {
-                bg.style.backgroundColor = "var(--text-muted)";
-                dot.style.transform = "translateX(0)";
                 sendToFirebase('set_alarm', { alarm_time: timeVal, is_active: false });
             }
         }
 
         // --- Trigger if user changes time while alarm is active ---
-        document.getElementById('alarm-time').addEventListener('change', (e) => {
-            const checkbox = document.getElementById('alarm-toggle');
+        document.getElementById('timeset-time').addEventListener('change', (e) => {
+            const checkbox = document.getElementById('timeset-toggle');
             if (checkbox.checked) {
                 sendToFirebase('set_alarm', { alarm_time: e.target.value, is_active: true });
             }
