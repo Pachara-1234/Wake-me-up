@@ -2,65 +2,285 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>I-Oun Alarm Control</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Wake Me Up 💖</title>
     <style>
-        body { font-family: sans-serif; text-align: center; padding-top: 50px; background: #1a1a1a; color: white; }
-        input { padding: 10px; font-size: 18px; border-radius: 5px; border: none; }
-        #wakeBtn { padding: 15px 30px; font-size: 20px; cursor: pointer; background: #e74c3c; color: white; border: none; border-radius: 10px; display: none; margin-top: 20px; }
-        #wakeBtn:hover { background: #c0392b; }
-        #status { margin-top: 20px; color: #2ecc71; font-weight: bold; }
+        /* ================= Samsung Tab S7 FE Dark Theme & Animations ================= */
+        :root {
+            --bg-color: #000000;
+            --card-color: #1c1c1e;
+            --text-main: #ffffff;
+            --text-muted: #8e8e93;
+            --accent-blue: #3e90ff;
+            --accent-red: #ff3b30;
+            --accent-green: #34c759;
+            --font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-family);
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* --- Login Screen --- */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--bg-color);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .login-title { font-size: 24px; font-weight: 600; margin-bottom: 30px; letter-spacing: 1px; }
+        .pin-input {
+            background: transparent; border: none; border-bottom: 2px solid var(--text-muted);
+            color: var(--text-main); font-size: 32px; text-align: center; width: 200px;
+            letter-spacing: 10px; outline: none; transition: border-color 0.3s;
+        }
+        .pin-input:focus { border-bottom-color: var(--accent-blue); }
+        .error-msg { color: var(--accent-red); margin-top: 15px; font-size: 14px; opacity: 0; transition: opacity 0.3s; }
+
+        /* --- Main App UI --- */
+        #main-app {
+            display: none; flex-direction: column; height: 100%;
+            opacity: 0; transform: scale(0.98);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        /* --- Tabs (Top Bar) --- */
+        .tab-bar {
+            display: flex; justify-content: space-around; align-items: center;
+            padding: 20px 10px 10px; background-color: var(--bg-color);
+            position: sticky; top: 0; z-index: 10;
+        }
+        .tab-btn {
+            background: none; border: none; color: var(--text-muted); font-size: 18px; font-weight: 600;
+            padding: 10px 20px; cursor: pointer; transition: color 0.3s, transform 0.2s;
+            position: relative;
+        }
+        .tab-btn.active { color: var(--accent-blue); }
+        .tab-btn.active::after {
+            content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 40px; height: 3px; background-color: var(--accent-blue); border-radius: 2px;
+        }
+
+        /* --- Tab Content Area --- */
+        .content-area {
+            flex: 1; position: relative; overflow: hidden; padding: 20px;
+        }
+        .tab-content {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 20px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s ease;
+        }
+        /* Default positions for sliding animation */
+        #nudge-tab { transform: translateX(0); opacity: 1; z-index: 2; }
+        #alarm-tab { transform: translateX(100%); opacity: 0; z-index: 1; pointer-events: none; }
         
-        /* ปุ่มแมวลับ สำหรับหยุดเพลง */
-        #cat { position: fixed; bottom: 10px; left: 10px; cursor: pointer; opacity: 0.2; font-size: 24px; background: none; border: none; }
-        #cat:hover { opacity: 1; }
+        body.show-alarm #nudge-tab { transform: translateX(-100%); opacity: 0; pointer-events: none; }
+        body.show-alarm #alarm-tab { transform: translateX(0); opacity: 1; pointer-events: auto; }
+
+        /* --- UI Elements --- */
+        .circle-btn {
+            width: 200px; height: 200px; border-radius: 50%; border: none;
+            background: linear-gradient(145deg, #232326, #1a1a1c);
+            box-shadow: 10px 10px 20px #0a0a0a, -10px -10px 20px #2e2e32;
+            color: var(--text-main); font-size: 28px; font-weight: bold;
+            cursor: pointer; transition: transform 0.1s, box-shadow 0.1s;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 10px;
+        }
+        .circle-btn:active {
+            transform: scale(0.95);
+            box-shadow: inset 10px 10px 20px #0a0a0a, inset -10px -10px 20px #2e2e32;
+        }
+        .circle-btn.blue { color: var(--accent-blue); }
+        
+        .time-picker {
+            background: transparent; border: none; color: var(--text-main);
+            font-size: 64px; font-weight: 300; outline: none; margin-bottom: 30px;
+        }
+        .time-picker::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+
+        .action-card {
+            background-color: var(--card-color); width: 100%; max-width: 400px;
+            border-radius: 24px; padding: 25px; margin-top: 30px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        
+        .stop-btn {
+            background-color: var(--card-color); border: 2px solid var(--accent-red);
+            color: var(--accent-red); font-size: 18px; font-weight: 600;
+            padding: 15px 40px; border-radius: 30px; cursor: pointer;
+            margin-top: 50px; transition: all 0.2s; width: 100%; max-width: 300px;
+        }
+        .stop-btn:active { background-color: var(--accent-red); color: white; transform: scale(0.95); }
+
+        .status-text { margin-top: 20px; font-size: 14px; color: var(--text-muted); min-height: 20px; }
+
+        /* Animation classes */
+        .fade-out { opacity: 0 !important; transform: scale(1.05) !important; pointer-events: none; }
+        .fade-in { opacity: 1 !important; transform: scale(1) !important; display: flex !important; }
     </style>
 </head>
 <body>
-    <h1>ระบบปลุกไออุ่น (Cloud)</h1>
-    
-    <div id="login-section">
-        <p>กรุณาใส่รหัสผ่าน:</p>
-        <input type="password" id="password" oninput="checkPass()" placeholder="******">
+
+    <div id="login-screen">
+        <div class="login-title">Enter PIN to access</div>
+        <input type="password" id="pin-input" class="pin-input" inputmode="numeric" maxlength="6" placeholder="------" onkeyup="checkPin(this.value)">
+        <div id="error-msg" class="error-msg">Incorrect PIN</div>
     </div>
 
-    <button id="wakeBtn" onclick="sendCommand('wake')">WAKE I-OUN UP!</button>
-    <p id="status"></p>
+    <div id="main-app">
+        <div class="tab-bar">
+            <button class="tab-btn active" id="btn-nudge" onclick="switchTab('nudge')">สะกิดที่รัก 💖</button>
+            <button class="tab-btn" id="btn-alarm" onclick="switchTab('alarm')">ตั้งปลุก ⏰</button>
+        </div>
 
-    <button id="cat" onclick="sendCommand('stop')">🐈</button>
+        <div class="content-area">
+            <div id="nudge-tab" class="tab-content">
+                <button class="circle-btn blue" onclick="sendToFirebase('nudge')">
+                    <span style="font-size: 40px;">👋</span>
+                    สะกิดเลย!
+                </button>
+                <div id="nudge-status" class="status-text">รอการสั่งงาน...</div>
+
+                <button class="stop-btn" onclick="sendToFirebase('stop')">⏹ หยุดเพลง / ปิดไฟ</button>
+            </div>
+
+            <div id="alarm-tab" class="tab-content">
+                <input type="time" id="alarm-time" class="time-picker" value="07:00">
+                
+                <div class="action-card">
+                    <div>
+                        <div style="font-size: 20px; font-weight: 500;">เปิดใช้งานนาฬิกาปลุก</div>
+                        <div style="font-size: 14px; color: var(--text-muted); margin-top: 5px;">เล่นเพลงพร้อมกระพริบไฟ</div>
+                    </div>
+                    <label style="position: relative; display: inline-block; width: 60px; height: 34px;">
+                        <input type="checkbox" id="alarm-toggle" style="opacity: 0; width: 0; height: 0;" onchange="toggleAlarm(this)">
+                        <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--text-muted); transition: .4s; border-radius: 34px;" id="toggle-bg">
+                            <span style="position: absolute; content: ''; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%;" id="toggle-dot"></span>
+                        </span>
+                    </label>
+                </div>
+                <div id="alarm-status" class="status-text">รอการตั้งเวลา...</div>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // ใช้ลิงก์ Firebase ของคุณโดยตรง (เติม /status.json แล้ว)
         const FIREBASE_URL = "https://wake-me-up-kreme-default-rtdb.asia-southeast1.firebasedatabase.app/status.json";
 
-        function checkPass() {
-            const pass = document.getElementById('password').value;
-            if (pass === "130825") {
-                document.getElementById('wakeBtn').style.display = "inline-block";
-                document.getElementById('login-section').style.display = "none";
-                document.getElementById('status').innerText = "พร้อมใช้งาน! สั่งการจากที่ไหนก็ได้";
+        // --- Login Logic ---
+        function checkPin(val) {
+            const errorMsg = document.getElementById('error-msg');
+            if (val.length === 6) {
+                if (val === "130825") {
+                    errorMsg.style.opacity = "0";
+                    document.getElementById('pin-input').blur();
+                    
+                    // Animate Login out, App in
+                    document.getElementById('login-screen').classList.add('fade-out');
+                    setTimeout(() => {
+                        document.getElementById('main-app').style.display = 'flex';
+                        // Small delay to let display:flex apply before adding fade-in class
+                        setTimeout(() => {
+                            document.getElementById('main-app').classList.add('fade-in');
+                        }, 50);
+                    }, 500);
+                } else {
+                    errorMsg.style.opacity = "1";
+                    setTimeout(() => {
+                        document.getElementById('pin-input').value = '';
+                        errorMsg.style.opacity = "0";
+                    }, 1000);
+                }
             }
         }
 
-        function sendCommand(actionCommand) {
-            document.getElementById('status').innerText = "กำลังส่งคำสั่งไปที่ Cloud...";
-            
-            // ส่งคำสั่ง wake หรือ stop ไปที่ Firebase
-            fetch(FIREBASE_URL, {
-                method: 'PUT',
-                body: JSON.stringify({ action: actionCommand })
-            })
-            .then(response => {
-                if (actionCommand === 'wake') {
-                    document.getElementById('status').innerText = "ปลุกไออุ่นสำเร็จ! (ระบบ Cloud)";
-                } else {
-                    document.getElementById('status').innerText = "สั่งหยุดเพลงสำเร็จ!";
-                }
-            })
-            .catch(err => {
-                document.getElementById('status').innerText = "เชื่อมต่อ Cloud ไม่ได้ (เช็คเน็ตมือถือ)";
-            });
+        // --- Tab Switching Logic ---
+        function switchTab(tab) {
+            if (tab === 'alarm') {
+                document.body.classList.add('show-alarm');
+                document.getElementById('btn-alarm').classList.add('active');
+                document.getElementById('btn-nudge').classList.remove('active');
+            } else {
+                document.body.classList.remove('show-alarm');
+                document.getElementById('btn-nudge').classList.add('active');
+                document.getElementById('btn-alarm').classList.remove('active');
+            }
         }
+
+        // --- Firebase Interaction ---
+        async function sendToFirebase(actionType, extraData = {}) {
+            // Update status text based on active tab
+            const statusEl = document.body.classList.contains('show-alarm') 
+                ? document.getElementById('alarm-status') 
+                : document.getElementById('nudge-status');
+            
+            statusEl.textContent = "กำลังส่งคำสั่ง...";
+
+            // Create payload
+            // ใช้ timestamp เพื่อให้ฝั่งบอร์ด (ESP8266/ESP32) รู้ว่าเป็นคำสั่งใหม่เสมอ
+            const payload = {
+                command: actionType, // 'nudge', 'stop', 'set_alarm'
+                timestamp: Date.now(),
+                ...extraData
+            };
+
+            try {
+                // ใช้ PATCH เพื่ออัปเดตเฉพาะข้อมูลที่ส่งไป ไม่ลบข้อมูลเก่าทิ้งทั้งหมด
+                const response = await fetch(FIREBASE_URL, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    if(actionType === 'nudge') statusEl.textContent = "สะกิดเรียบร้อยแล้ว! 💖";
+                    if(actionType === 'stop') statusEl.textContent = "สั่งหยุดเพลงและไฟแล้ว ⏹";
+                    if(actionType === 'set_alarm') statusEl.textContent = "อัปเดตเวลาปลุกแล้ว ⏰";
+                    
+                    setTimeout(() => statusEl.textContent = "รอการสั่งงาน...", 3000);
+                } else {
+                    throw new Error('Network response was not ok');
+                }
+            } catch (error) {
+                statusEl.textContent = "เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย!";
+                console.error("Firebase Error:", error);
+            }
+        }
+
+        // --- Alarm Toggle Styling & Logic ---
+        function toggleAlarm(checkbox) {
+            const bg = document.getElementById('toggle-bg');
+            const dot = document.getElementById('toggle-dot');
+            const timeVal = document.getElementById('alarm-time').value;
+
+            if (checkbox.checked) {
+                bg.style.backgroundColor = "var(--accent-blue)";
+                dot.style.transform = "translateX(26px)";
+                sendToFirebase('set_alarm', { alarm_time: timeVal, is_active: true });
+            } else {
+                bg.style.backgroundColor = "var(--text-muted)";
+                dot.style.transform = "translateX(0)";
+                sendToFirebase('set_alarm', { alarm_time: timeVal, is_active: false });
+            }
+        }
+
+        // --- Trigger if user changes time while alarm is active ---
+        document.getElementById('alarm-time').addEventListener('change', (e) => {
+            const checkbox = document.getElementById('alarm-toggle');
+            if (checkbox.checked) {
+                sendToFirebase('set_alarm', { alarm_time: e.target.value, is_active: true });
+            }
+        });
+
     </script>
 </body>
 </html>
