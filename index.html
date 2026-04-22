@@ -3,18 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Time set</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Wake Me Up 💖</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;600&family=Sarabun:wght@300;500;600&display=swap" rel="stylesheet">
     <style>
-        /* ================= Samsung Tab S7 FE Dark Theme & Animations ================= */
         :root {
-            --bg-color: #0a0a0c;
-            --card-color: #1a1a1c;
+            --bg-color: #0c0c0e;
+            --card-color: #1c1c1e;
             --text-main: #ffffff;
             --text-muted: #8e8e93;
-            --accent-blue: #3e90ff;
-            --accent-red: #ff3b30;
-            --font-family: 'Noto Sans Thai', sans-serif;
+            --accent-blue: #0A84FF;
+            --accent-red: #ff453a;
+            --font-family: 'Inter', 'Sarabun', sans-serif;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -23,7 +22,7 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             font-family: var(--font-family);
-            overflow-x: hidden;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
             height: 100vh;
@@ -34,152 +33,130 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: var(--bg-color);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 1000;
-            transition: opacity 0.5s ease, transform 0.5s ease;
+            z-index: 1000; transition: all 0.5s ease;
         }
-        .login-title { font-size: 24px; font-weight: 600; margin-bottom: 30px; letter-spacing: 1px; }
         .pin-input {
-            background: transparent; border: none; border-bottom: 2px solid var(--text-muted);
-            color: var(--text-main); font-size: 32px; text-align: center; width: 200px;
-            letter-spacing: 10px; outline: none; transition: border-color 0.3s;
+            background: #1c1c1e; border: 1px solid #333; border-radius: 15px;
+            color: var(--text-main); font-size: 32px; text-align: center; width: 220px;
+            padding: 15px; letter-spacing: 8px; outline: none;
         }
-        .pin-input:focus { border-bottom-color: var(--accent-blue); }
-        .error-msg { color: var(--accent-red); margin-top: 15px; font-size: 14px; opacity: 0; transition: opacity 0.3s; }
 
         /* --- Main App UI --- */
-        #main-app {
-            display: none; flex-direction: column; height: 100%;
-            opacity: 0; transform: scale(0.98);
-            transition: opacity 0.5s ease, transform 0.5s ease;
-        }
+        #main-app { display: none; flex-direction: column; height: 100%; opacity: 0; }
 
-        /* --- Tabs (Top Bar) --- */
+        /* --- Tab Bar (Custom Borders) --- */
         .tab-bar {
-            display: flex; justify-content: space-around; align-items: center;
-            padding: 20px 10px 10px; background-color: var(--bg-color);
-            position: sticky; top: 0; z-index: 10;
+            display: flex; justify-content: center; gap: 15px;
+            padding: 30px 20px 10px; background-color: var(--bg-color);
         }
         .tab-btn {
-            background: none; border: none; color: var(--text-muted); font-size: 18px; font-weight: 600;
-            padding: 10px 20px; cursor: pointer; transition: color 0.3s, transform 0.2s;
-            position: relative;
+            background: none; border: 1.5px solid #333; color: var(--text-muted); 
+            font-size: 16px; font-weight: 600; padding: 12px 30px; cursor: pointer; 
+            border-radius: 12px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .tab-btn.active { color: var(--accent-blue); }
-        .tab-btn.active::after {
-            content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-            width: 40px; height: 3px; background-color: var(--accent-blue); border-radius: 2px;
+        .tab-btn.active {
+            color: var(--accent-blue); border-color: var(--accent-blue);
+            background: rgba(10, 132, 255, 0.1);
         }
 
-        /* --- Tab Content Area --- */
-        .content-area {
-            flex: 1; position: relative; overflow: hidden; padding: 20px;
-        }
+        /* --- Content Area --- */
+        .content-area { flex: 1; position: relative; overflow: hidden; }
         .tab-content {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 20px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s ease;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            padding: 20px; display: flex; flex-direction: column; align-items: center;
+            transition: transform 0.4s ease, opacity 0.4s;
         }
-        /* Default positions for sliding animation */
-        #wake-up-tab { transform: translateX(0); opacity: 1; z-index: 2; }
-        #timeset-tab { transform: translateX(100%); opacity: 0; z-index: 1; pointer-events: none; }
-        
-        body.show-alarm #wake-up-tab { transform: translateX(-100%); opacity: 0; pointer-events: none; }
-        body.show-alarm #timeset-tab { transform: translateX(0); opacity: 1; pointer-events: auto; }
 
-        /* --- UI Elements --- */
-        .circle-btn {
-            width: 200px; height: 200px; border-radius: 50%; border: none;
-            background: linear-gradient(145deg, #232326, #1a1a1c);
-            box-shadow: 10px 10px 20px #0a0a0a, -10px -10px 20px #2e2e32;
-            color: var(--text-main); font-size: 28px; font-weight: bold;
-            cursor: pointer; transition: transform 0.1s, box-shadow 0.1s;
-            display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 10px;
+        /* --- WAKE UP Tab (Petting Cat) --- */
+        .cat-container {
+            position: relative; width: 250px; height: 250px;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; margin-top: 40px;
         }
-        .circle-btn:active {
-            transform: scale(0.95);
-            box-shadow: inset 10px 10px 20px #0a0a0a, inset -10px -10px 20px #2e2e32;
+        .cat-img { width: 180px; filter: drop-shadow(0 0 20px rgba(255,255,255,0.1)); }
+        .hand-img {
+            position: absolute; width: 100px; top: 40px; right: 20px;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
         }
-        .circle-btn.blue { color: var(--accent-blue); }
-        
-        .time-picker {
-            background: transparent; border: none; color: var(--text-main);
-            font-size: 64px; font-weight: 300; outline: none; margin-bottom: 30px;
-        }
-        .time-picker::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+        .cat-container:active .hand-img { transform: scale(1.4) translateY(15px) rotate(-10deg); }
+        .awake-label { margin-top: 25px; font-size: 18px; font-weight: 300; color: var(--text-muted); }
 
-        .action-card {
-            background-color: var(--card-color); width: 100%; max-width: 400px;
-            border-radius: 24px; padding: 25px; margin-top: 30px;
+        /* --- Timeset Tab (Alarm List) --- */
+        .add-alarm-btn {
+            background: var(--accent-blue); border: none; color: white;
+            width: 60px; height: 60px; border-radius: 50%; font-size: 30px;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 10px 20px rgba(10, 132, 255, 0.3);
+            cursor: pointer; margin-bottom: 30px;
+        }
+        .alarm-list {
+            width: 100%; max-width: 450px; overflow-y: auto; 
+            padding: 10px; display: flex; flex-direction: column; gap: 15px;
+            max-height: 70vh; scrollbar-width: none;
+        }
+        .alarm-card {
+            background: var(--card-color); border-radius: 24px; padding: 20px 25px;
             display: flex; justify-content: space-between; align-items: center;
+            animation: slideUp 0.4s ease;
         }
-        
-        /* ปุ่มสกิดดีไซน์ใหม่ */
-        .nudge-card {
-            background-color: var(--card-color); width: 100%; max-width: 400px;
-            border-radius: 24px; padding: 25px; margin-top: 30px;
-            display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 10px;
-            cursor: pointer; transition: transform 0.1s, box-shadow 0.1s;
+        .alarm-info .time { font-size: 38px; font-weight: 300; letter-spacing: -1px; }
+        .alarm-info .label { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+
+        /* --- Toggle Switch --- */
+        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #3a3a3c; transition: .4s; border-radius: 34px;
         }
-        .nudge-card:active {
-            transform: scale(0.95);
-            box-shadow: inset 10px 10px 20px #0a0a0a, inset -10px -10px 20px #2e2e32;
+        .slider:before {
+            position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 3px;
+            background-color: white; transition: .4s; border-radius: 50%;
         }
-        .nudge-card-image { width: 100%; height: auto; border-radius: 12px; }
+        input:checked + .slider { background-color: var(--accent-blue); }
+        input:checked + .slider:before { transform: translateX(22px); }
 
-        /* สวิตช์สลับเปิด/ปิด */
-        .toggle-switch { position: relative; display: inline-block; width: 60px; height: 34px; }
-        .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .toggle-bg { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--text-muted); transition: .4s; border-radius: 34px; }
-        .toggle-dot { position: absolute; content: ''; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .toggle-bg { background-color: var(--accent-blue); }
-        input:checked + .toggle-bg .toggle-dot { transform: translateX(26px); }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        .status-text { margin-top: 20px; font-size: 14px; color: var(--text-muted); min-height: 20px; }
+        /* Transitions */
+        #nudge-tab { transform: translateX(0); }
+        #alarm-tab { transform: translateX(100%); opacity: 0; }
+        body.show-alarm #nudge-tab { transform: translateX(-100%); opacity: 0; }
+        body.show-alarm #alarm-tab { transform: translateX(0); opacity: 1; }
 
-        /* Animation classes */
-        .fade-out { opacity: 0 !important; transform: scale(1.25) !important; pointer-events: none; }
-        .fade-in { opacity: 1 !important; transform: scale(1) !important; display: flex !important; }
+        .status-text { margin-top: 30px; font-size: 13px; color: #555; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
-        <div class="login-title">Enter PIN to access</div>
-        <input type="password" id="pin-input" class="pin-input" inputmode="numeric" maxlength="6" placeholder="------" onkeyup="checkPin(this.value)">
-        <div id="error-msg" class="error-msg">Incorrect PIN</div>
+        <div style="margin-bottom: 20px; font-weight: 500;">Enter PIN</div>
+        <input type="password" id="pin-input" class="pin-input" inputmode="numeric" maxlength="6" onkeyup="checkPin(this.value)">
+        <div id="error-msg" style="color: var(--accent-red); margin-top: 15px; opacity: 0;">Incorrect PIN</div>
     </div>
 
     <div id="main-app">
         <div class="tab-bar">
-            <button class="tab-btn active" id="btn-nudge" onclick="switchTab('wake-up')">WAKE UP 💖</button>
-            <button class="tab-btn" id="btn-timeset" onclick="switchTab('timeset')">Timeset ⏰</button>
+            <button class="tab-btn active" id="btn-nudge" onclick="switchTab('nudge')">WAKE UP</button>
+            <button class="tab-btn" id="btn-alarm" onclick="switchTab('alarm')">Timeset</button>
         </div>
 
         <div class="content-area">
-            <div id="wake-up-tab" class="tab-content">
-                <button class="nudge-card" onclick="sendToFirebase('nudge')">
-                    <img src="https://gemini.google.com/u/0/app/image_2.png" alt="สกิดแมว" class="nudge-card-image">
-                    <div>Awake ioun now button</div>
-                </button>
-                <div id="nudge-status" class="status-text">รอการสั่งงาน...</div>
+            <div id="nudge-tab" class="tab-content">
+                <div class="cat-container" onclick="handleNudge()">
+                    <div class="cat-img" style="font-size: 120px;">🐱</div>
+                    <div class="hand-img" style="font-size: 70px;">🫳</div>
+                </div>
+                <div class="awake-label">Awake ioun now buttom</div>
+                <div id="nudge-status" class="status-text">Ready to nudge...</div>
             </div>
 
-            <div id="timeset-tab" class="tab-content">
-                <input type="time" id="timeset-time" class="time-picker" value="07:00">
-                
-                <div class="action-card">
-                    <div>
-                        <div style="font-size: 20px; font-weight: 500;">เปิดใช้งานนาฬิกาปลุก</div>
-                        <div style="font-size: 14px; color: var(--text-muted); margin-top: 5px;">เล่นเพลงพร้อมกระพริบไฟ</div>
+            <div id="alarm-tab" class="tab-content">
+                <button class="add-alarm-btn" onclick="addNewAlarm()">+</button>
+                <div class="alarm-list" id="alarm-list">
                     </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="timeset-toggle" onchange="toggleAlarm(this)">
-                        <span class="toggle-bg">
-                            <span class="toggle-dot"></span>
-                        </span>
-                    </label>
-                </div>
-                <div id="timeset-status" class="status-text">รอการตั้งเวลา...</div>
+                <div id="alarm-status" class="status-text">Configure your wake up calls</div>
             </div>
         </div>
     </div>
@@ -187,104 +164,80 @@
     <script>
         const FIREBASE_URL = "https://wake-me-up-kreme-default-rtdb.asia-southeast1.firebasedatabase.app/status.json";
 
-        // --- Login Logic ---
         function checkPin(val) {
-            const errorMsg = document.getElementById('error-msg');
-            if (val.length === 6) {
-                if (val === "130825") {
-                    errorMsg.style.opacity = "0";
-                    document.getElementById('pin-input').blur();
-                    
-                    // Animate Login out, App in
-                    document.getElementById('login-screen').classList.add('fade-out');
-                    setTimeout(() => {
-                        document.getElementById('main-app').style.display = 'flex';
-                        // Small delay to let display:flex apply before adding fade-in class
-                        setTimeout(() => {
-                            document.getElementById('main-app').classList.add('fade-in');
-                        }, 50);
-                    }, 500);
-                } else {
-                    errorMsg.style.opacity = "1";
-                    setTimeout(() => {
-                        document.getElementById('pin-input').value = '';
-                        errorMsg.style.opacity = "0";
-                    }, 1000);
-                }
+            if (val === "130825") {
+                document.getElementById('login-screen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('main-app').style.display = 'flex';
+                    setTimeout(() => document.getElementById('main-app').style.opacity = '1', 50);
+                }, 500);
             }
         }
 
-        // --- Tab Switching Logic ---
         function switchTab(tab) {
-            if (tab === 'timeset') {
+            if (tab === 'alarm') {
                 document.body.classList.add('show-alarm');
-                document.getElementById('btn-timeset').classList.add('active');
+                document.getElementById('btn-alarm').classList.add('active');
                 document.getElementById('btn-nudge').classList.remove('active');
             } else {
                 document.body.classList.remove('show-alarm');
                 document.getElementById('btn-nudge').classList.add('active');
-                document.getElementById('btn-timeset').classList.remove('active');
+                document.getElementById('btn-alarm').classList.remove('active');
             }
         }
 
-        // --- Firebase Interaction ---
-        async function sendToFirebase(actionType, extraData = {}) {
-            // Update status text based on active tab
-            const statusEl = document.body.classList.contains('show-alarm') 
-                ? document.getElementById('timeset-status') 
-                : document.getElementById('nudge-status');
-            
-            statusEl.textContent = "กำลังส่งคำสั่ง...";
+        async function handleNudge() {
+            const status = document.getElementById('nudge-status');
+            status.textContent = "Sending love...";
+            await sendToFirebase('nudge');
+            status.textContent = "Awoken successfully! 💖";
+            setTimeout(() => status.textContent = "Ready to nudge...", 2000);
+        }
 
-            // Create payload
-            // ใช้ timestamp เพื่อให้ฝั่งบอร์ด (ESP8266/ESP32) รู้ว่าเป็นคำสั่งใหม่เสมอ
-            const payload = {
-                command: actionType, // 'nudge', 'set_alarm'
-                timestamp: Date.now(),
-                ...extraData
-            };
-
+        async function sendToFirebase(actionType, extra = {}) {
+            const payload = { command: actionType, timestamp: Date.now(), ...extra };
             try {
-                // ใช้ PATCH เพื่ออัปเดตเฉพาะข้อมูลที่ส่งไป ไม่ลบข้อมูลเก่าทิ้งทั้งหมด
-                const response = await fetch(FIREBASE_URL, {
+                await fetch(FIREBASE_URL, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
+            } catch (e) { console.error(e); }
+        }
 
-                if (response.ok) {
-                    if(actionType === 'nudge') statusEl.textContent = "สะกิดเรียบร้อยแล้ว! 💖";
-                    if(actionType === 'set_alarm') statusEl.textContent = "อัปเดตเวลาปลุกแล้ว ⏰";
-                    
-                    setTimeout(() => statusEl.textContent = "รอการสั่งงาน...", 3000);
-                } else {
-                    throw new Error('Network response was not ok');
-                }
-            } catch (error) {
-                statusEl.textContent = "เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย!";
-                console.error("Firebase Error:", error);
+        // --- Alarm List Logic ---
+        function addNewAlarm() {
+            const time = prompt("ใส่เวลาปลุก (เช่น 07:30)", "07:00");
+            if (time && time.includes(":")) {
+                createAlarmCard(time);
             }
         }
 
-        // --- Alarm Togglestyling & Logic ---
-        function toggleAlarm(checkbox) {
-            const timeVal = document.getElementById('timeset-time').value;
-
-            if (checkbox.checked) {
-                sendToFirebase('set_alarm', { alarm_time: timeVal, is_active: true });
-            } else {
-                sendToFirebase('set_alarm', { alarm_time: timeVal, is_active: false });
-            }
+        function createAlarmCard(time) {
+            const container = document.getElementById('alarm-list');
+            const id = 'alarm-' + Date.now();
+            
+            const card = document.createElement('div');
+            card.className = 'alarm-card';
+            card.id = id;
+            card.innerHTML = `
+                <div class="alarm-info">
+                    <div class="time">${time}</div>
+                    <div class="label">Daily Alarm</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" checked onchange="toggleAlarmStatus('${time}', this.checked)">
+                    <span class="slider"></span>
+                </label>
+            `;
+            container.prepend(card);
+            sendToFirebase('set_alarm', { alarm_time: time, is_active: true });
         }
 
-        // --- Trigger if user changes time while alarm is active ---
-        document.getElementById('timeset-time').addEventListener('change', (e) => {
-            const checkbox = document.getElementById('timeset-toggle');
-            if (checkbox.checked) {
-                sendToFirebase('set_alarm', { alarm_time: e.target.value, is_active: true });
-            }
-        });
-
+        function toggleAlarmStatus(time, isActive) {
+            sendToFirebase('set_alarm', { alarm_time: time, is_active: isActive });
+        }
     </script>
 </body>
 </html>
